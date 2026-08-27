@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7ZEN - لوحة التحكم</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Tahoma,Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:#080808;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+}
+
+.container{
+    width:100%;
+    max-width:500px;
+    background:#111;
+    border:1px solid #272727;
+    border-radius:14px;
+    padding:22px;
+    box-shadow:0 15px 45px rgba(0,0,0,.7);
+}
+
+.header{
+    text-align:center;
+    margin-bottom:22px;
+}
+
+.header h1{
+    color:#ff3030;
+    font-size:29px;
+    letter-spacing:1px;
+}
+
+.header p{
+    color:#777;
+    font-size:12px;
+    margin-top:7px;
+}
+
+.card{
+    background:#161616;
+    border:1px solid #292929;
+    border-radius:10px;
+    padding:15px;
+    margin-bottom:14px;
+}
+
+.title{
+    color:#ff4040;
+    font-size:13px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+input{
+    width:100%;
+    background:#0d0d0d;
+    color:#ddd;
+    border:1px solid #303030;
+    border-radius:7px;
+    padding:12px;
+    outline:none;
+    font-size:12px;
+    direction:ltr;
+}
+
+input:focus{
+    border-color:#ff3030;
+}
+
+button{
+    border:0;
+    border-radius:7px;
+    padding:11px;
+    color:#fff;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.2s;
+}
+
+button:hover{
+    filter:brightness(1.2);
+    transform:translateY(-1px);
+}
+
+.webhook-row{
+    display:flex;
+    gap:8px;
+}
+
+.webhook-row input{
+    flex:1;
+}
+
+.check{
+    background:#174b91;
+    width:85px;
+}
+
+.preview{
+    display:none;
+    margin-top:12px;
+    padding:12px;
+    background:#0c0c0c;
+    border:1px solid #292929;
+    border-radius:8px;
+    align-items:center;
+    gap:10px;
+}
+
+.preview img{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.preview-name{
+    font-weight:bold;
+    font-size:13px;
+}
+
+.preview-bio{
+    color:#777;
+    font-size:10px;
+    margin-top:4px;
+    direction:ltr;
+    text-align:right;
+}
+
+.actions{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:7px;
+    margin-top:10px;
+}
+
+.add{
+    background:#292929;
+    color:#aaa;
+}
+
+.fetch{
+    background:#59165e;
+}
+
+.channels{
+    background:#12621e;
+}
+
+.controls{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:8px;
+    margin-bottom:16px;
+}
+
+.create{
+    background:#176b29;
+}
+
+.start{
+    background:#bd1717;
+}
+
+.stop{
+    background:#292929;
+    color:#aaa;
+}
+
+.counter{
+    text-align:center;
+    margin:5px 0 14px;
+}
+
+.counter-label{
+    color:#777;
+    font-size:11px;
+}
+
+.counter-value{
+    color:#00ff5e;
+    font-size:28px;
+    font-weight:bold;
+    margin-top:4px;
+}
+
+.console{
+    height:150px;
+    overflow:auto;
+    direction:ltr;
+    text-align:left;
+    background:#070707;
+    border:1px solid #252525;
+    border-radius:8px;
+    padding:10px;
+    font-family:monospace;
+    font-size:11px;
+    color:#777;
+}
+
+.log{
+    margin-bottom:5px;
+}
+
+.ok{
+    color:#00d957;
+}
+
+.warn{
+    color:#ffb000;
+}
+
+.err{
+    color:#ff4040;
+}
+
+.preview-box{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:10px;
+}
+
+.small-btn{
+    background:#202020;
+    font-size:11px;
+}
+
+.footer{
+    text-align:center;
+    color:#555;
+    font-size:10px;
+    margin-top:17px;
+}
+
+.footer span{
+    color:#ff3030;
+}
+
+@media(max-width:420px){
+    .container{
+        padding:16px;
+    }
+
+    .controls{
+        grid-template-columns:1fr;
+    }
+
+    .actions{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>💀 7ZEN</h1>
+        <p>فحص • اختبار ويبهوك • إدارة آمنة</p>
+    </div>
+
+    <div class="card">
+
+        <div class="title">🔗 Webhook</div>
+
+        <div class="webhook-row">
+            <input
+                id="webhook"
+                type="text"
+                placeholder="https://discord.com/api/webhooks/..."
+            >
+
+            <button class="check" onclick="checkWebhook()">
+                🔍 فحص
+            </button>
+        </div>
+
+        <div class="preview" id="preview">
+
+            <img
+                id="botImage"
+                src="https://i.ibb.co/FbpcJTHx/IMG-3570.jpg"
+                alt=""
+            >
+
+            <div>
+                <div class="preview-name">
+                    بـروگــ 🇺🇸 ★
+                </div>
+
+                <div class="preview-bio">
+                    https://discord.gg/TVX
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="title">🤖 إعدادات الاختبار</div>
+
+        <input
+            id="message"
+            type="text"
+            value="discord.gg/TVX"
+            placeholder="الرسالة"
+        >
+
+        <div class="preview-box">
+
+            <button
+                class="small-btn"
+                onclick="createRoom()">
+                🆕 إنشاء قناة اختبار
+            </button>
+
+            <button
+                class="small-btn"
+                onclick="createRole()">
+                🛡️ إنشاء رول اختبار
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="title">
+            🔗 الويبهوكات
+        </div>
+
+        <div class="webhook-row">
+
+            <input
+                id="webhook2"
+                type="text"
+                placeholder="Webhook إضافي"
+            >
+
+            <button
+                class="check"
+                onclick="addWebhook()">
+                ➕
+            </button>
+
+        </div>
+
+        <div class="actions">
+
+            <button
+                class="add"
+                onclick="addWebhook()">
+                ➕ إضافة
+            </button>
+
+            <button
+                class="fetch"
+                onclick="fetchWebhooks()">
+                🔍 جلب
+            </button>
+
+            <button
+                class="channels"
+                onclick="showChannels()">
+                📡 القنوات
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="controls">
+
+        <button
+            class="create"
+            onclick="createTest()">
+            🆕 إنشاء
+        </button>
+
+        <button
+            class="start"
+            id="startBtn"
+            onclick="startTest()">
+            💀 ابدأ
+        </button>
+
+        <button
+            class="stop"
+            id="stopBtn"
+            onclick="stopTest()"
+            disabled>
+            🚫 إيقاف
+        </button>
+
+    </div>
+
+
+    <div class="counter">
+
+        <div class="counter-label">
+            رسائل الاختبار
+        </div>
+
+        <div
+            class="counter-value"
+            id="counter">
+            0
+        </div>
+
+    </div>
+
+
+    <div
+        class="console"
+        id="console">
+    </div>
+
+
+    <div class="footer">
+        <span>💀</span>
+        7ZEN
+        &nbsp;•&nbsp;
+        <span>💀</span>
+        TRX HUB
+        &nbsp;•&nbsp;
+        <span>💀</span>
+    </div>
+
+</div>
+
+
+<script>
+
+let running = false;
+let timer = null;
+let messages = 0;
+let webhooks = [];
+
+
+/* Console */
+
+function log(text,type=""){
+
+    const box = document.getElementById("console");
+
+    const line = document.createElement("div");
+
+    line.className = "log " + type;
+
+    const time = new Date().toLocaleTimeString();
+
+    line.textContent =
+        "[" + time + "] " + text;
+
+    box.appendChild(line);
+
+    box.scrollTop = box.scrollHeight;
+}
+
+
+/* Webhook Check */
+
+function checkWebhook(){
+
+    const value =
+        document.getElementById("webhook").value.trim();
+
+    if(!value){
+
+        log("لم يتم إدخال Webhook","err");
+
+        return;
+    }
+
+    if(
+        !value.startsWith(
+            "https://discord.com/api/webhooks/"
+        )
+    ){
+
+        log("رابط Webhook غير صحيح","err");
+
+        return;
+    }
+
+    document.getElementById("preview").style.display =
+        "flex";
+
+    log(
+        "تم التعرف على رابط Webhook",
+        "ok"
+    );
+
+    log(
+        "اسم المعاينة: بـروگــ 🇺🇸 ★",
+        "ok"
+    );
+
+    log(
+        "Bio: https://discord.gg/TVX",
+        "ok"
+    );
+}
+
+
+/* Add webhook */
+
+function addWebhook(){
+
+    const input =
+        document.getElementById("webhook2");
+
+    const value =
+        input.value.trim();
+
+    if(!value){
+
+        log(
+            "أدخل Webhook أولاً",
+            "warn"
+        );
+
+        return;
+    }
+
+    if(
+        !value.startsWith(
+            "https://discord.com/api/webhooks/"
+        )
+    ){
+
+        log(
+            "Webhook غير صالح",
+            "err"
+        );
+
+        return;
+    }
+
+    webhooks.push(value);
+
+    input.value = "";
+
+    log(
+        "تمت إضافة Webhook رقم " +
+        webhooks.length,
+        "ok"
+    );
+}
+
+
+/* Fetch */
+
+function fetchWebhooks(){
+
+    log(
+        "تم تشغيل وضع جلب الويبهوكات التجريبي",
+        "ok"
+    );
+
+    log(
+        "عدد الويبهوكات المحفوظة: " +
+        webhooks.length,
+        "ok"
+    );
+}
+
+
+/* Channels */
+
+function showChannels(){
+
+    log(
+        "وضع القنوات الآمن: لا يتم حذف أو تكرار القنوات",
+        "warn"
+    );
+
+    log(
+        "القناة التجريبية: ☣️ FAYROS ROOM ☣️",
+        "ok"
+    );
+}
+
+
+/* Create Room */
+
+function createRoom(){
+
+    log(
+        "تم تجهيز قناة اختبار باسم: ☣️ FAYROS ROOM ☣️",
+        "ok"
+    );
+}
+
+
+/* Create Role */
+
+function createRole(){
+
+    log(
+        "تم تجهيز رول اختبار باسم: ☣️ FAYROS ROLE ☣️",
+        "ok"
+    );
+
+    log(
+        "لن يتم تطبيق الرول على أعضاء السيرفر تلقائياً",
+        "warn"
+    );
+}
+
+
+/* Create */
+
+function createTest(){
+
+    createRoom();
+    createRole();
+
+    log(
+        "اكتمل إنشاء عناصر الاختبار",
+        "ok"
+    );
+}
+
+
+/* Start */
+
+function startTest(){
+
+    if(running){
+
+        log(
+            "الاختبار يعمل بالفعل",
+            "warn"
+        );
+
+        return;
+    }
+
+    const webhook =
+        document.getElementById("webhook")
+        .value
+        .trim();
+
+    if(!webhook){
+
+        log(
+            "أدخل Webhook قبل البدء",
+            "err"
+        );
+
+        return;
+    }
+
+    running = true;
+
+    document.getElementById("startBtn")
+        .disabled = true;
+
+    document.getElementById("stopBtn")
+        .disabled = false;
+
+    log(
+        "بدأ اختبار الإرسال المحدود",
+        "ok"
+    );
+
+    /*
+       حد آمن للاختبار:
+       5 رسائل فقط
+    */
+
+    let sent = 0;
+
+    timer = setInterval(async () => {
+
+        if(!running){
+
+            clearInterval(timer);
+
+            return;
+        }
+
+        if(sent >= 5){
+
+            stopTest();
+
+            log(
+                "تم الوصول إلى الحد التجريبي: 5 رسائل",
+                "warn"
+            );
+
+            return;
+        }
+
+        sent++;
+        messages++;
+
+        document.getElementById("counter")
+            .textContent = messages;
+
+        log(
+            "تم تجهيز رسالة اختبار رقم " +
+            sent,
+            "ok"
+        );
+
+    },1000);
+}
+
+
+/* Stop */
+
+function stopTest(){
+
+    running = false;
+
+    if(timer){
+
+        clearInterval(timer);
+
+        timer = null;
+    }
+
+    document.getElementById("startBtn")
+        .disabled = false;
+
+    document.getElementById("stopBtn")
+        .disabled = true;
+
+    log(
+        "تم إيقاف الاختبار",
+        "warn"
+    );
+}
+
+
+/* Initial */
+
+log(
+    "7ZEN جاهز",
+    "ok"
+);
+
+log(
+    "الوضع الآمن مفعل",
+    "warn"
+);
+
+</script>
+
+</body>
+</html>
